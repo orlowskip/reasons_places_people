@@ -25,7 +25,7 @@ places_lsd <- subset(d, select = c("EDI_SUM",
 # function to fit robust linear regression 
 # takes the subsetted data and returns the model
 fit_robust_lm <- function(.data) {
-  model <- lmrob(EDI_SUM ~ ., data = .data, 
+  model <- lmrob(EDI_SUM ~ ., data = .data, # EDI_SUM ~ . means "predict edi using all other vars in the data 
                  na.action = na.omit, 
                  fast.s.large.n = Inf, 
                  setting = "KS2014")
