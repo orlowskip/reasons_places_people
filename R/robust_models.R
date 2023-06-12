@@ -21,6 +21,20 @@ places_lsd <- subset(d, select = c("EDI_SUM",
                                    "PlacesLSD.SQ005.",
                                    "PlacesLSD.SQ006.",
                                    "PlacesLSD.SQ007."))
+#function to quickly generate predictor names from our database
+# I had to create three separate functions cause places, reasons and people differ in number of questions so loop would have not work
+create_places <- function(substance) {
+  predictors <- c()
+  for (x in 1:7) {
+    predictors <- c(predictors, paste0("Places", substance, ".SQ00", as.character(x), "."))
+  }
+  predictors
+}
+
+test_places_lsd <- create_places("LSD")
+test_places_lsd
+
+
 
 # function to fit robust linear regression 
 # takes the subsetted data and returns the model
