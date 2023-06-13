@@ -32,7 +32,7 @@ create_predictors <- function(condition, substance) {
     predictors <- c(paste0("WithWhom", substance, ".SQ00", 1:6, "."))
   }
   predictors
-}
+} 
 
 ####################testing. I'll delete it later
 test_places_lsd <- create_predictors('places', "LSD")
