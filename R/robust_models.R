@@ -1,7 +1,7 @@
 library(robustbase)
 library(car)
 d <- read.csv('./data/dane_poprawione.csv') # . is the home directory 
-
+d <- select(d, -starts_with(c("OtherPlaces", "OtherReasons")))
 # make a substet of the d data.frame with predictor (EDI_SUM) and predictors of choosing 
 reasons_lsd <- subset(d, select = c("EDI_SUM", 
                                     "ReasonsLSD.SQ001.", 
@@ -21,6 +21,32 @@ places_lsd <- subset(d, select = c("EDI_SUM",
                                    "PlacesLSD.SQ005.",
                                    "PlacesLSD.SQ006.",
                                    "PlacesLSD.SQ007."))
+
+#function to quickly generate predictor names from our database
+# I had to create three separate functions cause places, reasons and people differ in number of questions so loop would have not work
+create_places <- function(substance) {
+  predictors <- c()
+  for (x in 1:7) {
+    predictors <- c(predictors, paste0("Places", substance, ".SQ00", x, "."))
+  }
+  predictors
+}
+
+
+create_predictors <- function(condition, substance) {
+  require(dplyr)
+  cmax <- length(select(d, contains(condition) & contains(substance)))
+  predictors <- c(paste0(condition, substance, ".SQ00", 1:cmax, "."))
+  predictors
+}
+
+paste0("Places", "LSD", ".SQ00", 1:7, ".")
+
+test_places_lsd <- create_places("LSD")
+test_places_lsd
+
+
+
 
 # function to fit robust linear regression 
 # takes the subsetted data and returns the model
