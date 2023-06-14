@@ -1,7 +1,8 @@
 library(robustbase)
 library(car)
+library(dplyr)
 d <- read.csv('./data/dane_poprawione.csv') # . is the home directory 
-
+d <- select(d, -starts_with(c("OtherPlaces", "OtherReasons")))
 # make a substet of the d data.frame with predictor (EDI_SUM) and predictors of choosing 
 reasons_lsd <- subset(d, select = c("EDI_SUM", 
                                     "ReasonsLSD.SQ001.", 
@@ -21,6 +22,22 @@ places_lsd <- subset(d, select = c("EDI_SUM",
                                    "PlacesLSD.SQ005.",
                                    "PlacesLSD.SQ006.",
                                    "PlacesLSD.SQ007."))
+#function to quickly generate predictor names from our database
+create_predictors <- function(condition, substance) {
+  require(dplyr)
+  cmax <- length(select(d, contains(condition) & contains(substance)))
+  predictors <- c(paste0(condition, substance, ".SQ00", 1:cmax, "."))
+  predictors
+}
+###################################
+#creating sets containing predictors and predicted value
+reasons_lsd <- subset(d, select = c("EDI_SUM", create_predictors('Reasons', 'LSD')))
+places_lsd <- subset(d, select = c("EDI_SUM", create_predictors('Places', 'LSD')))
+with_whom_lsd <- subset(d, select = c("EDI_SUM", create_predictors('WithWhom', 'LSD')))
+reasons_mushrooms <- subset(d, select = c("EDI_SUM", create_predictors('Reasons', 'Mushrooms')))
+places_mushrooms <- subset(d, select = c("EDI_SUM", create_predictors('Places', 'Mushrooms')))
+with_whom_mushrooms <- subset(d, select = c("EDI_SUM", create_predictors('WithWhom', 'Mushrooms')))
+
 
 # function to fit robust linear regression 
 # takes the subsetted data and returns the model
@@ -34,8 +51,12 @@ fit_robust_lm <- function(.data) {
 
 # use of the function
 reasons_lsd_model <- fit_robust_lm(reasons_lsd) 
-  
-places_lsd_model <- (places_lsd)
+places_lsd_model <- fit_robust_lm(places_lsd) 
+with_whom_lsd_model <- fit_robust_lm(with_whom_lsd) 
+reasons_mushrooms_model <- fit_robust_lm(reasons_mushrooms) 
+places_mushrooms_model <- fit_robust_lm(places_mushrooms) 
+with_whom_mushrooms_model <- fit_robust_lm(with_whom_mushrooms) 
+
 
 # use with lapply wrapper
 # takes a list of subsetted datasets and returns a list of models 
