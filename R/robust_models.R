@@ -8,6 +8,20 @@ source("./R/functions.R")
 d <- read.csv('./data/dane_poprawione.csv') # . is the home directory 
 d <- select(d, -starts_with(c("OtherPlaces", "OtherReasons")))
 
+# change levels order for WithWhom and Places
+d <- d %>% mutate_at(vars(starts_with("WithWhom")), 
+                     ~factor(.,
+                             levels = c("wcale",
+                                        "rzadko",
+                                        "często",
+                                        "najczęściej"))) %>%
+  mutate_at(vars(starts_with("Reasons")), 
+            ~factor(.,
+                    levels = c("wcale",
+                               "rzadko",
+                               "często",
+                               "najczęściej")))
+
 # maybe we can use a for loop to make it cleaner
 # conditions names
 conditions <- c("Reasons", "Places", "WithWhom")
