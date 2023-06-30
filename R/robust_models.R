@@ -15,7 +15,7 @@ d <- d %>% mutate_at(vars(starts_with("WithWhom")),
                                         "rzadko",
                                         "często",
                                         "najczęściej"))) %>%
-  mutate_at(vars(starts_with("Reasons")), 
+  mutate_at(vars(starts_with("Places")), 
             ~factor(.,
                     levels = c("wcale",
                                "rzadko",
