@@ -1,6 +1,6 @@
 library(car)
 library(dplyr)
-
+library(bestNormalize)
 # load the functions used in the script
 # create_predictors()
 # and fit_robust_lm
@@ -10,6 +10,8 @@ d <- read.csv('./data/dane_poprawione.csv', fileEncoding="UTF-8") # . is the hom
 d <- subset(d, Plec != "inna")
 d <- select(d, -starts_with(c("OtherPlaces", "OtherReasons")))
 
+
+
 # change levels order for WithWhom and Places
 # change levels order for WithWhom and Places
 d <- d %>% mutate_at(vars(starts_with(c("WithWhom", 
@@ -18,7 +20,8 @@ d <- d %>% mutate_at(vars(starts_with(c("WithWhom",
                              levels = c("wcale",
                                         "rzadko",
                                         "często",
-                                        "najczęściej")))
+                                        "najczęściej"))) %>%
+  mutate(Psychedelics_lifetime = yeojohnson(Psychedelics_lifetime)$x.t)
 
 
 # maybe we can use a for loop to make it cleaner
@@ -55,12 +58,14 @@ for (i in 1:6) {
            Gender = factor(d$Plec),
            Education = factor(d$Wyksztalcenie, levels = c("ponizej sredniego", "średnie" , "licencjackie", "magisterskie i wyzej")),
            Residence = factor(d$MiejsceZamieszkania, levels = c("Wieś","Miasto do 50 tys.","Miasto od 50 tys. do 150 tys.", "Miasto od 150 tys. do 500 tys.", "Miasto powyżej 500 tys.")),
-           Finance = factor(d$SytuacjaMatarialna, levels = c("bardzo ?le", "źle","średnio","dobrze", "bardzo dobrze")))
+           Finance = factor(d$SytuacjaMatarialna, levels = c("bardzo ?le", "źle","średnio","dobrze", "bardzo dobrze")),
+           Psychedelics_lifetime = d$Psychedelics_lifetime
+           )
 }
 
 for (i in 1:6) {
   subsets[[i]] <- subsets[[i]] %>%
-    select(Age, Gender,Education, Residence, Finance, everything())
+    select(Age, Gender,Education, Residence, Finance, Psychedelics_lifetime, everything())
 }
 
 # and now we can use lapply wrapper to do the models in one line
@@ -69,17 +74,5 @@ models <- lapply(subsets, fit_robust_lm)
 # and then anovas tables
 anovas <- lapply(models, Anova, type = "III")
 
-<<<<<<< HEAD
-prediction.data <- data_frame(
-  PlacesLSD.SQ001. = c("wcale", "rzadko", "często", "najczęściej"),
-  PlacesLSD.SQ002. = c("wcale", "rzadko", "często", "najczęściej"),
-  PlacesLSD.SQ003. = c("wcale", "rzadko", "często", "najczęściej"),
-  PlacesLSD.SQ004. = c("wcale", "rzadko", "często", "najczęściej"),
-  PlacesLSD.SQ005. = c("wcale", "rzadko", "często", "najczęściej"),
-  PlacesLSD.SQ006. = c("wcale", "rzadko", "często", "najczęściej"),
-  PlacesLSD.SQ007. = c("wcale", "rzadko", "często", "najczęściej"),)
-predict(models[[2]], newdata = prediction.data, se.fit = TRUE)
-=======
-saveRDS(models, "models.rds")
-saveRDS(anovas, "anovas.rds")
->>>>>>> c0db8833043f7b35ac3166edada65295e0abf8a8
+saveRDS(models, "models_with_use.rds")
+saveRDS(anovas, "anovas_with_use.rds")
