@@ -9,18 +9,15 @@ d <- read.csv('./data/dane_poprawione.csv') # . is the home directory
 d <- select(d, -starts_with(c("OtherPlaces", "OtherReasons")))
 
 # change levels order for WithWhom and Places
-d <- d %>% mutate_at(vars(starts_with("WithWhom")), 
+# change levels order for WithWhom and Places
+d <- d %>% mutate_at(vars(starts_with(c("WithWhom", 
+                                        "Places"))), 
                      ~factor(.,
                              levels = c("wcale",
                                         "rzadko",
                                         "często",
-                                        "najczęściej"))) %>%
-  mutate_at(vars(starts_with("Places")), 
-            ~factor(.,
-                    levels = c("wcale",
-                               "rzadko",
-                               "często",
-                               "najczęściej")))
+                                        "najczęściej")))
+
 
 # maybe we can use a for loop to make it cleaner
 # conditions names
@@ -54,3 +51,12 @@ models <- lapply(subsets, fit_robust_lm)
 # and then anovas tables
 anovas <- lapply(models, Anova, type = "III")
 
+prediction.data <- data_frame(
+  PlacesLSD.SQ001. = c("wcale", "rzadko", "często", "najczęściej"),
+  PlacesLSD.SQ002. = c("wcale", "rzadko", "często", "najczęściej"),
+  PlacesLSD.SQ003. = c("wcale", "rzadko", "często", "najczęściej"),
+  PlacesLSD.SQ004. = c("wcale", "rzadko", "często", "najczęściej"),
+  PlacesLSD.SQ005. = c("wcale", "rzadko", "często", "najczęściej"),
+  PlacesLSD.SQ006. = c("wcale", "rzadko", "często", "najczęściej"),
+  PlacesLSD.SQ007. = c("wcale", "rzadko", "często", "najczęściej"),)
+predict(models[[2]], newdata = prediction.data, se.fit = TRUE)
