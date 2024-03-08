@@ -21,7 +21,8 @@ d <- d %>% mutate_at(vars(starts_with(c("WithWhom",
                                         "rzadko",
                                         "często",
                                         "najczęściej"))) %>%
-  mutate(Psychedelics_lifetime = yeojohnson(Psychedelics_lifetime)$x.t)
+  mutate(LifetimeLSD = yeojohnson(LifetimeLSD)$x.t,
+         LifetimeMushrooms = yeojohnson(LifetimeMushrooms)$x.t)
 
 
 # maybe we can use a for loop to make it cleaner
@@ -54,18 +55,28 @@ names(subsets) = subset_names
 # wybierz z datasetu dane doemograficzne (Wiek, płeć, wykształcenie)
 for (i in 1:6) {
   subsets[[i]] <- subsets[[i]] %>%
-    mutate(Age = factor(d$Age_d),
+    mutate(Age = d$Age,
            Gender = factor(d$Plec),
            Education = factor(d$Wyksztalcenie, levels = c("ponizej sredniego", "średnie" , "licencjackie", "magisterskie i wyzej")),
            Residence = factor(d$MiejsceZamieszkania, levels = c("Wieś","Miasto do 50 tys.","Miasto od 50 tys. do 150 tys.", "Miasto od 150 tys. do 500 tys.", "Miasto powyżej 500 tys.")),
            Finance = factor(d$SytuacjaMatarialna, levels = c("bardzo ?le", "źle","średnio","dobrze", "bardzo dobrze")),
-           Psychedelics_lifetime = d$Psychedelics_lifetime
+           LifetimeLSD = d$LifetimeLSD,
+           LifetimeMushrooms = d$LifetimeMushrooms
            )
 }
 
 for (i in 1:6) {
-  subsets[[i]] <- subsets[[i]] %>%
-    select(Age, Gender,Education, Residence, Finance, Psychedelics_lifetime, everything())
+  if (i <= 3) {
+    subsets[[i]] <- subsets[[i]] %>%
+      select(Age, Gender, Education, Residence, Finance, LifetimeLSD, everything()) %>%
+      select(-c(LifetimeMushrooms))
+  }
+  if (i > 3) {
+    subsets[[i]] <- subsets[[i]] %>%
+      select(Age, Gender,Education, Residence, Finance, LifetimeMushrooms, everything()) %>%
+      select(-c(LifetimeLSD))
+  }
+  
 }
 
 # and now we can use lapply wrapper to do the models in one line
