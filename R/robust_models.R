@@ -69,17 +69,5 @@ models <- lapply(subsets, fit_robust_lm)
 # and then anovas tables
 anovas <- lapply(models, Anova, type = "III")
 
-<<<<<<< HEAD
-prediction.data <- data_frame(
-  PlacesLSD.SQ001. = c("wcale", "rzadko", "często", "najczęściej"),
-  PlacesLSD.SQ002. = c("wcale", "rzadko", "często", "najczęściej"),
-  PlacesLSD.SQ003. = c("wcale", "rzadko", "często", "najczęściej"),
-  PlacesLSD.SQ004. = c("wcale", "rzadko", "często", "najczęściej"),
-  PlacesLSD.SQ005. = c("wcale", "rzadko", "często", "najczęściej"),
-  PlacesLSD.SQ006. = c("wcale", "rzadko", "często", "najczęściej"),
-  PlacesLSD.SQ007. = c("wcale", "rzadko", "często", "najczęściej"),)
-predict(models[[2]], newdata = prediction.data, se.fit = TRUE)
-=======
 saveRDS(models, "models.rds")
 saveRDS(anovas, "anovas.rds")
->>>>>>> c0db8833043f7b35ac3166edada65295e0abf8a8
