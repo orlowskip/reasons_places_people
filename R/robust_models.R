@@ -11,7 +11,6 @@ d <- subset(d, Plec != "inna")
 d <- select(d, -starts_with(c("OtherPlaces", "OtherReasons")))
 
 
-
 # change levels order for WithWhom and Places
 # change levels order for WithWhom and Places
 d <- d %>% mutate_at(vars(starts_with(c("WithWhom", 
@@ -23,7 +22,6 @@ d <- d %>% mutate_at(vars(starts_with(c("WithWhom",
                                         "najczęściej"))) %>%
   mutate(LifetimeLSD = yeojohnson(LifetimeLSD)$x.t,
          LifetimeMushrooms = yeojohnson(LifetimeMushrooms)$x.t)
-
 
 # maybe we can use a for loop to make it cleaner
 # conditions names
@@ -52,7 +50,14 @@ for (i in substances) {
 # name the subsets in the list
 names(subsets) = subset_names
 
-# wybierz z datasetu dane doemograficzne (Wiek, płeć, wykształcenie)
+# Reorder motivational predictors
+new_order_LSD <- c("EDI_SUM", "ReasonsLSD.SQ001.", "ReasonsLSD.SQ002.", "ReasonsLSD.SQ006.", "ReasonsLSD.SQ008.", "ReasonsLSD.SQ003.", "ReasonsLSD.SQ004.","ReasonsLSD.SQ005.", "ReasonsLSD.SQ007." )
+new_order_MSH <- c("EDI_SUM", "ReasonsMushrooms.SQ001.", "ReasonsMushrooms.SQ002.", "ReasonsMushrooms.SQ006.", "ReasonsMushrooms.SQ008.", "ReasonsMushrooms.SQ003.", "ReasonsMushrooms.SQ004.","ReasonsMushrooms.SQ005.", "ReasonsMushrooms.SQ007." )
+
+subsets[1]$Reasons_LSD <- subsets[1]$Reasons_LSD[, new_order_LSD]
+subsets[4]$Reasons_Mushrooms <- subsets[4]$Reasons_Mushrooms[, new_order_MSH]
+
+# Select doemographic data (Age, gender, education) and lifetime use of the investigated substances 
 for (i in 1:6) {
   subsets[[i]] <- subsets[[i]] %>%
     mutate(Age = d$Age,
@@ -61,8 +66,7 @@ for (i in 1:6) {
            Residence = factor(d$MiejsceZamieszkania, levels = c("Wieś","Miasto do 50 tys.","Miasto od 50 tys. do 150 tys.", "Miasto od 150 tys. do 500 tys.", "Miasto powyżej 500 tys.")),
            Finance = factor(d$SytuacjaMatarialna, levels = c("bardzo ?le", "źle","średnio","dobrze", "bardzo dobrze")),
            LifetimeLSD = d$LifetimeLSD,
-           LifetimeMushrooms = d$LifetimeMushrooms
-           )
+           LifetimeMushrooms = d$LifetimeMushrooms)
 }
 
 for (i in 1:6) {
@@ -76,8 +80,23 @@ for (i in 1:6) {
       select(Age, Gender,Education, Residence, Finance, LifetimeMushrooms, everything()) %>%
       select(-c(LifetimeLSD))
   }
-  
 }
+
+# drop specific factors levels (e.g. levels related with less than 20 responses)
+subset_levels <- c("wcale","rzadko","często")
+
+subsets[2]$Places_LSD$PlacesLSD.SQ003. <- factor(subsets[2]$Places_LSD$PlacesLSD.SQ003., levels = subset_levels) #LSD - club party
+subsets[2]$Places_LSD$PlacesLSD.SQ007. <- factor(subsets[2]$Places_LSD$PlacesLSD.SQ007., levels = subset_levels) #LSD - Other
+subsets[3]$WithWhom_LSD$WithWhomLSD.SQ006. <- factor(subsets[3]$WithWhom_LSD$WithWhomLSD.SQ006., levels = subset_levels) #LSD - Strangers
+subsets[6]$WithWhom_Mushrooms$WithWhomMushrooms.SQ006. <- factor(subsets[6]$WithWhom_Mushrooms$WithWhomMushrooms.SQ006., levels = subset_levels) #Mushrooms - Strangers
+
+subset_levels <- c("wcale","rzadko")
+subsets[2]$Places_LSD$PlacesLSD.SQ006. <- factor(subsets[2]$Places_LSD$PlacesLSD.SQ006., levels = subset_levels) #LSD - Specialized Centre/Ceremony
+subsets[3]$WithWhom_LSD$WithWhomLSD.SQ005. <- factor(subsets[3]$WithWhom_LSD$WithWhomLSD.SQ005., levels = subset_levels) # LSD- Therapist/Guide
+subsets[5]$Places_Mushrooms$PlacesMushrooms.SQ003. <- factor(subsets[5]$Places_Mushrooms$PlacesMushrooms.SQ003., levels = subset_levels) # Mushrooms - club party
+subsets[5]$Places_Mushrooms$PlacesMushrooms.SQ006. <- factor(subsets[5]$Places_Mushrooms$PlacesMushrooms.SQ006., levels = subset_levels) # Mushrooms - Specialized Centre/Ceremony
+subsets[5]$Places_Mushrooms$PlacesMushrooms.SQ007. <- factor(subsets[5]$Places_Mushrooms$PlacesMushrooms.SQ007., levels = subset_levels) # Mushrooms - Other
+subsets[6]$WithWhom_Mushrooms$WithWhomMushrooms.SQ005. <- factor(subsets[6]$WithWhom_Mushrooms$WithWhomMushrooms.SQ005., levels = subset_levels) # Mushrooms - Therapist/Guide
 
 # and now we can use lapply wrapper to do the models in one line
 # lapply is a wrapper that goes through every element in the list and apply the function
