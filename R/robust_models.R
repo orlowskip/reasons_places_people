@@ -1,6 +1,7 @@
 library(car)
 library(dplyr)
 library(bestNormalize)
+
 # load the functions used in the script
 # create_predictors()
 # and fit_robust_lm
@@ -8,8 +9,15 @@ source("./R/functions.R")
 # read and clean the data 
 d <- read.csv('./data/dane_poprawione.csv', fileEncoding="UTF-8") # . is the home directory 
 d <- subset(d, Plec != "inna")
-d <- select(d, -starts_with(c("OtherPlaces", "OtherReasons")))
 
+#remove participants who have tried psychedelic substances except LSD and psilocybin mushrooms
+d<- subset(d,EverAya == -1 &
+               EverPsyloSyn == -1 &
+               EverDMT == -1 &
+               EverChanga == -1 &
+               EverMeskalina == -1)
+
+d <- select(d, -starts_with(c("OtherPlaces", "OtherReasons")))
 
 # change levels order for WithWhom and Places
 # change levels order for WithWhom and Places
@@ -83,20 +91,26 @@ for (i in 1:6) {
 }
 
 # drop specific factors levels (e.g. levels related with less than 20 responses)
+
+#1 - Drop entire predictors
+subsets[2]$Places_LSD <- subset(subsets[2]$Places_LSD, select = -PlacesLSD.SQ006.)
+subsets[4]$Reasons_Mushrooms <- subset(subsets[4]$Reasons_Mushrooms, select = -ReasonsMushrooms.SQ007.)
+subsets[5]$Places_Mushrooms <- subset(subsets[5]$Places_Mushrooms, select =  -PlacesMushrooms.SQ006.) # Mushrooms - Specialized Centre/Ceremony
+subsets[6]$WithWhom_Mushrooms <- subset(subsets[6]$WithWhom_Mushrooms, select = -WithWhomMushrooms.SQ005.) # Mushrooms - Therapist/Guide
+
+#2 - Drop the "Most often" level of a given predictor
 subset_levels <- c("wcale","rzadko","często")
-
 subsets[2]$Places_LSD$PlacesLSD.SQ003. <- factor(subsets[2]$Places_LSD$PlacesLSD.SQ003., levels = subset_levels) #LSD - club party
-subsets[2]$Places_LSD$PlacesLSD.SQ007. <- factor(subsets[2]$Places_LSD$PlacesLSD.SQ007., levels = subset_levels) #LSD - Other
-subsets[3]$WithWhom_LSD$WithWhomLSD.SQ006. <- factor(subsets[3]$WithWhom_LSD$WithWhomLSD.SQ006., levels = subset_levels) #LSD - Strangers
-subsets[6]$WithWhom_Mushrooms$WithWhomMushrooms.SQ006. <- factor(subsets[6]$WithWhom_Mushrooms$WithWhomMushrooms.SQ006., levels = subset_levels) #Mushrooms - Strangers
+subsets[5]$Places_Mushrooms$PlacesMushrooms.SQ004. <- factor(subsets[5]$Places_Mushrooms$PlacesMushrooms.SQ004., levels = subset_levels)
 
+#3 - Drop "Most often" and "Often" levels of a given predictor
 subset_levels <- c("wcale","rzadko")
-subsets[2]$Places_LSD$PlacesLSD.SQ006. <- factor(subsets[2]$Places_LSD$PlacesLSD.SQ006., levels = subset_levels) #LSD - Specialized Centre/Ceremony
+subsets[2]$Places_LSD$PlacesLSD.SQ007. <- factor(subsets[2]$Places_LSD$PlacesLSD.SQ007., levels = subset_levels)
 subsets[3]$WithWhom_LSD$WithWhomLSD.SQ005. <- factor(subsets[3]$WithWhom_LSD$WithWhomLSD.SQ005., levels = subset_levels) # LSD- Therapist/Guide
+subsets[3]$WithWhom_LSD$WithWhomLSD.SQ006. <- factor(subsets[3]$WithWhom_LSD$WithWhomLSD.SQ006., levels = subset_levels) #LSD - Strangers
 subsets[5]$Places_Mushrooms$PlacesMushrooms.SQ003. <- factor(subsets[5]$Places_Mushrooms$PlacesMushrooms.SQ003., levels = subset_levels) # Mushrooms - club party
-subsets[5]$Places_Mushrooms$PlacesMushrooms.SQ006. <- factor(subsets[5]$Places_Mushrooms$PlacesMushrooms.SQ006., levels = subset_levels) # Mushrooms - Specialized Centre/Ceremony
 subsets[5]$Places_Mushrooms$PlacesMushrooms.SQ007. <- factor(subsets[5]$Places_Mushrooms$PlacesMushrooms.SQ007., levels = subset_levels) # Mushrooms - Other
-subsets[6]$WithWhom_Mushrooms$WithWhomMushrooms.SQ005. <- factor(subsets[6]$WithWhom_Mushrooms$WithWhomMushrooms.SQ005., levels = subset_levels) # Mushrooms - Therapist/Guide
+subsets[6]$WithWhom_Mushrooms$WithWhomMushrooms.SQ006. <- factor(subsets[6]$WithWhom_Mushrooms$WithWhomMushrooms.SQ006., levels = subset_levels) #Mushrooms - Strangers
 
 # and now we can use lapply wrapper to do the models in one line
 # lapply is a wrapper that goes through every element in the list and apply the function
@@ -104,5 +118,5 @@ models <- lapply(subsets, fit_robust_lm)
 # and then anovas tables
 anovas <- lapply(models, Anova, type = "III")
 
-saveRDS(models, "models_with_use.rds")
-saveRDS(anovas, "anovas_with_use.rds")
+saveRDS(models, "supplemantary_models.rds")
+saveRDS(anovas, "supplemantary_anovas.rds")
