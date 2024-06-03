@@ -11,11 +11,12 @@ d <- read.csv('./data/dane_poprawione.csv', fileEncoding="UTF-8") # . is the hom
 d <- subset(d, Plec != "inna")
 
 #remove participants who have tried psychedelic substances except LSD and psilocybin mushrooms
-d<- subset(d,EverAya == -1 &
-               EverPsyloSyn == -1 &
+d <- subset(d,EverAya == -1 &
                EverDMT == -1 &
                EverChanga == -1 &
-               EverMeskalina == -1)
+               EverMeskalina == -1 &
+               EverPochodne == -1 &
+               EverPsyloSyn == -1)
 
 d <- select(d, -starts_with(c("OtherPlaces", "OtherReasons")))
 
@@ -78,37 +79,31 @@ for (i in 1:6) {
 }
 
 for (i in 1:6) {
-  if (i <= 3) {
     subsets[[i]] <- subsets[[i]] %>%
-      select(Age, Gender, Education, Residence, Finance, LifetimeLSD, everything()) %>%
-      select(-c(LifetimeMushrooms))
-  }
-  if (i > 3) {
-    subsets[[i]] <- subsets[[i]] %>%
-      select(Age, Gender,Education, Residence, Finance, LifetimeMushrooms, everything()) %>%
-      select(-c(LifetimeLSD))
-  }
+      select(Age, Gender, Education, Residence, Finance, LifetimeLSD, LifetimeMushrooms, everything())
 }
 
 # drop specific factors levels (e.g. levels related with less than 20 responses)
 
 #1 - Drop entire predictors
+subsets[1]$Reasons_LSD <- subset(subsets[1]$Reasons_LSD, select = -ReasonsLSD.SQ007.)
 subsets[2]$Places_LSD <- subset(subsets[2]$Places_LSD, select = -PlacesLSD.SQ006.)
+subsets[3]$WithWhom_LSD <-subset(subsets[3]$WithWhom_LSD, select = -WithWhomLSD.SQ005.)
 subsets[4]$Reasons_Mushrooms <- subset(subsets[4]$Reasons_Mushrooms, select = -ReasonsMushrooms.SQ007.)
 subsets[5]$Places_Mushrooms <- subset(subsets[5]$Places_Mushrooms, select =  -PlacesMushrooms.SQ006.) # Mushrooms - Specialized Centre/Ceremony
 subsets[6]$WithWhom_Mushrooms <- subset(subsets[6]$WithWhom_Mushrooms, select = -WithWhomMushrooms.SQ005.) # Mushrooms - Therapist/Guide
 
 #2 - Drop the "Most often" level of a given predictor
 subset_levels <- c("wcale","rzadko","często")
-subsets[2]$Places_LSD$PlacesLSD.SQ003. <- factor(subsets[2]$Places_LSD$PlacesLSD.SQ003., levels = subset_levels) #LSD - club party
 subsets[5]$Places_Mushrooms$PlacesMushrooms.SQ004. <- factor(subsets[5]$Places_Mushrooms$PlacesMushrooms.SQ004., levels = subset_levels)
 
 #3 - Drop "Most often" and "Often" levels of a given predictor
 subset_levels <- c("wcale","rzadko")
+subsets[2]$Places_LSD$PlacesLSD.SQ003. <- factor(subsets[2]$Places_LSD$PlacesLSD.SQ003., levels = subset_levels)
 subsets[2]$Places_LSD$PlacesLSD.SQ007. <- factor(subsets[2]$Places_LSD$PlacesLSD.SQ007., levels = subset_levels)
-subsets[3]$WithWhom_LSD$WithWhomLSD.SQ005. <- factor(subsets[3]$WithWhom_LSD$WithWhomLSD.SQ005., levels = subset_levels) # LSD- Therapist/Guide
 subsets[3]$WithWhom_LSD$WithWhomLSD.SQ006. <- factor(subsets[3]$WithWhom_LSD$WithWhomLSD.SQ006., levels = subset_levels) #LSD - Strangers
 subsets[5]$Places_Mushrooms$PlacesMushrooms.SQ003. <- factor(subsets[5]$Places_Mushrooms$PlacesMushrooms.SQ003., levels = subset_levels) # Mushrooms - club party
+subsets[5]$Places_Mushrooms$PlacesMushrooms.SQ004. <- factor(subsets[5]$Places_Mushrooms$PlacesMushrooms.SQ004., levels = subset_levels)
 subsets[5]$Places_Mushrooms$PlacesMushrooms.SQ007. <- factor(subsets[5]$Places_Mushrooms$PlacesMushrooms.SQ007., levels = subset_levels) # Mushrooms - Other
 subsets[6]$WithWhom_Mushrooms$WithWhomMushrooms.SQ006. <- factor(subsets[6]$WithWhom_Mushrooms$WithWhomMushrooms.SQ006., levels = subset_levels) #Mushrooms - Strangers
 
@@ -118,5 +113,5 @@ models <- lapply(subsets, fit_robust_lm)
 # and then anovas tables
 anovas <- lapply(models, Anova, type = "III")
 
-saveRDS(models, "supplemantary_models.rds")
-saveRDS(anovas, "supplemantary_anovas.rds")
+saveRDS(models, "models.rds")
+saveRDS(anovas, "anovas.rds")
