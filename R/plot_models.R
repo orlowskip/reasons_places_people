@@ -6,8 +6,8 @@ library(sjmisc)
 library(ggplot2)
 
 # Read in models and anovas objects from RDS files
-models <- readRDS("models.rds")
-anovas <- readRDS("anovas.rds")
+models <- readRDS("models_subsample.rds")
+anovas <- readRDS("anovass_subsample.rds")
 
 # Plotting results
 selected_predictors_R_LSD =  names(models$Reasons_LSD$coefficients)[grep(".SQ", names(models$Reasons_LSD$coefficients))]

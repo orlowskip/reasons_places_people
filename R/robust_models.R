@@ -113,5 +113,5 @@ models <- lapply(subsets, fit_robust_lm)
 # and then anovas tables
 anovas <- lapply(models, Anova, type = "III")
 
-saveRDS(models, "models.rds")
-saveRDS(anovas, "anovas.rds")
+saveRDS(models, "models_subsample.rds")
+saveRDS(anovas, "anovas_subsample.rds")
